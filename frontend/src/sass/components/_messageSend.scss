@@ -1,0 +1,104 @@
+.message-send-section {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  .file {
+    display: flex;
+    padding: 8px;
+    font-size: 20px;
+    cursor: pointer;
+    label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0px;
+    }
+    #pic {
+      display: none;
+    }
+    .add-image,
+    .add-attachment,
+    .add-gift {
+      position: fixed;
+      padding: 4px;
+      font-size: 14px;
+      bottom: 44px;
+      background: antiquewhite;
+      display: none;
+    }
+  }
+  .hover-attachment {
+    position: relative;
+    &:hover {
+      .add-attachment {
+        display: block;
+      }
+    }
+  }
+  .hover-image {
+    position: relative;
+    &:hover {
+      .add-image {
+        display: block;
+      }
+    }
+  }
+  .hover-gift {
+    position: relative;
+    &:hover {
+      .add-gift {
+        display: block;
+      }
+    }
+  }
+  .message-type {
+    display: flex;
+    justify-content: flex-start;
+    width: 70%;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    align-items: center;
+    background-color: aliceblue;
+    .form-control {
+      border-bottom-left-radius: 50px;
+      border-top-left-radius: 50px;
+      border: none;
+      width: 100%;
+      padding: 5px 10px;
+      font-size: 16px;
+      &::placeholder {
+        color: black;
+      }
+    }
+    label {
+      margin-top: 5px;
+      font-size: 20px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+  }
+  .emoji-section {
+    width: 200px;
+    background: rgb(255, 255, 255);
+    position: absolute;
+    right: 60px;
+    bottom: 50px;
+    padding: 6px;
+    border-radius: 10px;
+    border-bottom-right-radius: 0px;
+    display: none;
+    .emoji {
+      span {
+        cursor: pointer;
+      }
+    }
+  }
+  #emoji {
+    display: none;
+  }
+  #emoji:checked ~ .emoji-section {
+    display: block;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "socket",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon --inspect index.js"
+  },
+  "dependencies": {
+    "nodemon": "^2.0.20",
+    "socket.io": "^4.5.4"
+  }
+}

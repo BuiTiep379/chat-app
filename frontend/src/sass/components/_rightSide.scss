@@ -1,0 +1,87 @@
+.col-9 {
+  .right-side {
+    height: 100%;
+    .row {
+      height: 100%;
+      .col-8 {
+        transition: all 0.5s;
+        .message-send-show {
+          height: 100vh;
+          border-right: 1px solid #b7b8ba;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          .header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 10px;
+            border-bottom: 1px solid #b7b8ba;
+            .image-name {
+              display: flex;
+              .image {
+                position: relative;
+                width: 40px;
+                height: 40px;
+                img {
+                  width: 40px;
+                  height: 40px;
+                  border-radius: 50%;
+                }
+                .active-icon {
+                  position: absolute;
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 50%;
+                  background-color: #55ff66;
+                  right: 0px;
+                  bottom: 0pc;
+                }
+              }
+              .name {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                h3 {
+                  padding-left: 10px;
+                }
+              }
+            }
+            .icons {
+              display: flex;
+              .icon {
+                width: 20px;
+                height: 20px;
+                margin-left: 8px;
+                border-radius: 50%;
+                cursor: pointer;
+                svg {
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                }
+                label {
+                  display: flex;
+                  margin-bottom: 0px;
+                  cursor: pointer;
+                }
+              }
+            }
+          }
+        }
+      }
+      .col-4 {
+      }
+    }
+    #dot {
+      display: none;
+    }
+    #dot:checked ~ .row .col-4 {
+      display: none;
+    }
+    #dot:checked ~ .row .col-8 {
+      width: 100%;
+    }
+  }
+}
