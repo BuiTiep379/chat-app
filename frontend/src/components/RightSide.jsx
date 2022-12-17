@@ -1,5 +1,5 @@
 import React from 'react';
-import avatar from '../assets/images/2.jpg';
+import avatar from '../assets/images/profile.png';
 import { IoCall } from 'react-icons/io5';
 import { BsCameraVideoFill } from 'react-icons/bs';
 import { HiDotsCircleHorizontal } from 'react-icons/hi';
@@ -9,7 +9,6 @@ import FriendInfo from './FriendInfo';
 
 const RightSide = (props) => {
   const { friend, inputHandleChange, newMessage, sendMessage, messages, scrollRef, emojiSend, imageSend, activeFriends, typingMessage } = props;
-  console.log(friend);
   const { username, image } = friend;
   return (
     <div className="col-9">
@@ -21,7 +20,8 @@ const RightSide = (props) => {
               <div className="header">
                 <div className="image-name">
                   <div className="image">
-                    <img src={image} alt="" />
+                    {image ? <img src={image} alt="" /> : <img src={avatar} alt="" />}
+
                     {activeFriends && activeFriends.length > 0 && activeFriends.some((u) => u.userId === friend._id) ? <div className="active-icon"></div> : null}
                   </div>
                   <div className="name">
@@ -48,7 +48,7 @@ const RightSide = (props) => {
             </div>
           </div>
           <div className="col-4">
-            <FriendInfo currentFriend={friend} activeFriends={activeFriends} />
+            <FriendInfo currentFriend={friend} activeFriends={activeFriends} messages={messages} />
           </div>
         </div>
       </div>

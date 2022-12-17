@@ -1,4 +1,5 @@
 import React from 'react';
+import avatar from '../assets/images/profile.png';
 const ActiveFriends = (props) => {
   const { user, setCurrentFriend } = props;
   return (
@@ -15,7 +16,8 @@ const ActiveFriends = (props) => {
     >
       <div className="image-active-icon">
         <div className="image">
-          <img src={user.userInfo.image} alt="avatar" />
+          {user.userInfo.image ? <img src={user.userInfo.image} alt="avatar" /> : <img src={avatar} alt="avatar" />}
+
           <div className="active-icon"></div>
         </div>
       </div>

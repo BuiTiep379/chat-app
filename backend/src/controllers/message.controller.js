@@ -2,6 +2,7 @@ const { Response, Create, ServerError } = require('../utils/response');
 const User = require('../models/user.model');
 const Message = require('../models/message.model');
 const cloudinary = require('../utils/cloudinary');
+
 const getLastMessage = async (myId, friendId) => {
   const lastMessage = await Message.findOne({
     $and: [
@@ -14,6 +15,26 @@ const getLastMessage = async (myId, friendId) => {
     .sort({ updatedAt: -1 })
     .exec();
   return lastMessage;
+};
+const updateMessageStatus = (req, res) => {
+  const messageData = req.body;
+  Message.findByIdAndUpdate(messageData._id, { status: 'seen' })
+    .then(() => {
+      return Response(res);
+    })
+    .catch((error) => {
+      return ServerError(res, error);
+    });
+};
+const updateMessageDelivered = (req, res) => {
+  const messageData = req.body;
+  Message.findByIdAndUpdate(messageData._id, { status: 'delivered' })
+    .then(() => {
+      return Response(res);
+    })
+    .catch((error) => {
+      return ServerError(res, error);
+    });
 };
 const getFriends = async (req, res) => {
   const id = req.userId;
@@ -48,6 +69,8 @@ const sendMessage = async (req, res) => {
           senderName,
           receiverId,
           message,
+          createdAt: data.createdAt,
+          updatedAta: data.updatedAt,
         },
       });
     }
@@ -96,14 +119,19 @@ const sendImageMessage = async (req, res) => {
           senderName,
           receiverId,
           message: data.message,
+          createdAt: data.createdAt,
+          updatedAta: data.updatedAt,
         },
       });
     }
   });
 };
+
 module.exports = {
   getFriends,
   sendMessage,
   getMessage,
   sendImageMessage,
+  updateMessageStatus,
+  updateMessageDelivered,
 };

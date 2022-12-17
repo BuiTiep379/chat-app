@@ -40,11 +40,33 @@ const getMessageAPI = createAsyncThunk('get-message', async (currentFriendId, th
   }
 });
 
+const updateMessageStatusAPI = createAsyncThunk('update-status-message', async (messageData, thunkAPI) => {
+  try {
+    const response = await axiosClient.post('/message/update-status', messageData, { withCredentials: true });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+    return thunkAPI.rejectWithValue(message);
+  }
+});
+const updateMessaageDeliveredAPI = createAsyncThunk('update-message-delivered', async (messageData, thunkAPI) => {
+  try {
+    const response = await axiosClient.post('/message/update-message-delivered', messageData, { withCredentials: true });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+    return thunkAPI.rejectWithValue(message);
+  }
+});
 const messageThunk = {
   getFriendsAPI,
   sendMessageAPI,
   getMessageAPI,
   sendImageMessageAPI,
+  updateMessageStatusAPI,
+  updateMessaageDeliveredAPI,
 };
 
 export default messageThunk;

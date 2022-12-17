@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { userActions } from './features/user/user.slice';
 import Home from './components/Home';
 import messageThunk from './features/message/message.service';
+import { PrivateComponent } from './components/PrivateRoute';
 function App() {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -19,16 +20,25 @@ function App() {
       dispatch(userActions.isUserLoggedIn());
     }
   }, [dispatch, user.isLoggedIn]);
+
   useEffect(() => {
     if (user.isLoggedIn) {
       dispatch(messageThunk.getFriendsAPI());
     }
-  }, [dispatch, user.isLoggedIn, navigate]);
+  }, [dispatch, user.isLoggedIn]);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            <PrivateComponent>
+              <Home />
+            </PrivateComponent>
+          }
+        />
         <Route path="/messager/login" element={<Login />} />
         <Route path="/messager/register" element={<Register />} />
       </Routes>

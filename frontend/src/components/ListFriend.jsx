@@ -1,42 +1,64 @@
 import React from 'react';
 import moment from 'moment';
+import { RiCheckboxCircleLine, RiCheckboxCircleFill } from 'react-icons/ri';
+import avatar from '../assets/images/profile.png';
 const ListFriend = (props) => {
-  const { friend, myInfo } = props;
-  console.log(friend);
+  const { friend, myInfo, activeFriends } = props;
   const { friendInfo, messageInfo } = friend;
   const { image, username } = friendInfo;
-  console.log(messageInfo);
-  console.log(myInfo);
+
   return (
     <div className="friend">
       <div className="friend-image">
         <div className="image">
-          <img src={image} alt="avatar" />
+          {image ? <img src={image} alt="avatar" /> : <img src={avatar} alt="avatar" />}
+
+          {activeFriends && activeFriends.length > 0 && activeFriends.some((u) => u.userId === friendInfo._id) ? <div className="active_icon"></div> : ''}
         </div>
       </div>
       <div className="friend-name-seen">
         <div className="friend-name">
-          <h4>{username}</h4>
+          <h4 className={messageInfo && messageInfo.senderId !== myInfo.id && messageInfo.status !== undefined && messageInfo.status !== 'seen' ? 'seen Fd_name' : 'unseen_message Fd_name'}>
+            {username}
+          </h4>
           <div className="msg-time">
-            {messageInfo && messageInfo.message && messageInfo.senderId === myInfo.id ? <span>Bạn </span> : <span>{friendInfo.username + ' '}</span>}
+            {messageInfo && messageInfo.message && messageInfo.senderId === myInfo.id ? (
+              <span>Bạn </span>
+            ) : (
+              <span className={messageInfo && messageInfo.senderId !== myInfo.id && messageInfo.status !== undefined && messageInfo.status !== 'seen' ? 'unseen_message' : ''}>
+                {friendInfo.username + ' '}
+              </span>
+            )}
             {messageInfo && messageInfo.message.text ? (
               <span>{messageInfo.message.text.slice(0, 10) + ' '}</span>
             ) : messageInfo && messageInfo.message.image ? (
-              <span>Hình ảnh </span>
+              <span>Image </span>
             ) : (
-              <span>Làm quen nào! </span>
+              <span>Connect to you! </span>
             )}
             <span>{messageInfo ? moment(messageInfo.createdAt).startOf('mini').fromNow() : moment(friendInfo.createdAt).startOf('mini').fromNow()}</span>
           </div>
         </div>
-        {myInfo.id === messageInfo?.senderId ? (
+        {messageInfo && myInfo.id === messageInfo?.senderId ? (
           <div className="seen-unseen-icon">
-            <img src={friendInfo.image} alt="" />
+            {messageInfo.status === 'seen' ? (
+              friendInfo ? (
+                <img src={friendInfo.image} alt="" />
+              ) : (
+                <img src={avatar} alt="" />
+              )
+            ) : messageInfo.status === 'delivered' ? (
+              <div className="delivered">
+                <RiCheckboxCircleFill />
+              </div>
+            ) : messageInfo.status === 'unseen' ? (
+              <div className="unseen">
+                <RiCheckboxCircleLine />
+              </div>
+            ) : null}
           </div>
         ) : (
-          <div className="seen-unseen-icon">
-            <div className="seen-icon"></div>{' '}
-          </div>
+          <div className="seen-unseen-icon">{messageInfo?.status !== undefined && messageInfo?.status !== 'seen' ? <div className="seen-icon"></div> : ''}</div>
         )}
       </div>
     </div>

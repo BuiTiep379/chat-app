@@ -1,17 +1,15 @@
 import React from 'react';
-import avatar from '../assets/images/2.jpg';
+import avatar from '../assets/images/profile.png';
 import { BsChevronDown } from 'react-icons/bs';
 const FriendInfo = (props) => {
-  const { currentFriend, activeFriends } = props;
+  const { currentFriend, activeFriends, messages } = props;
   const { username, image } = currentFriend;
   return (
     <div className="friend-info">
       <input type="checkbox" id="gallery" name="gallery" />
       <div className="image-name">
-        <div className="image">
-          <img src={image} alt="" />
-        </div>
-        {activeFriends && activeFriends.length > 0 && activeFriends.some((u) => u.userId === currentFriend._id) ? <div className="active-user">Hoạt động</div> : null}
+        <div className="image">{image ? <img src={image} alt="" /> : <img src={avatar} alt="" />}</div>
+        {activeFriends && activeFriends.length > 0 && activeFriends.some((u) => u.userId === currentFriend._id) ? <div className="active-user">Active</div> : null}
 
         <div className="name">
           <h4>{username}</h4>
@@ -27,7 +25,7 @@ const FriendInfo = (props) => {
           <BsChevronDown />
         </div>
         <div className="media">
-          <h3>share media</h3>
+          <h3>Share media</h3>
           <label htmlFor="gallery">
             {' '}
             <BsChevronDown />
@@ -35,13 +33,13 @@ const FriendInfo = (props) => {
         </div>
       </div>
       <div className="gallery">
-        <img src={avatar} alt="" />
-        <img src={avatar} alt="" />
-        <img src={avatar} alt="" />
-        <img src={avatar} alt="" />
-        <img src={avatar} alt="" />
-        <img src={avatar} alt="" />
-        <img src={avatar} alt="" />
+        {messages && messages.length > 0
+          ? messages.map((item, index) => {
+              if (item.message.image) {
+                return <img key={index} src={item.message.image} alt="" />;
+              }
+            })
+          : null}
       </div>
     </div>
   );

@@ -27,6 +27,12 @@ const userSlice = createSlice({
       state.message = '';
       state.error = null;
     },
+    signout: (state) => {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      state.isLoggedIn = false;
+      state.info = null;
+    },
     isUserLoggedIn: {
       reducer: (state, action) => {
         const { userData, token } = action.payload;

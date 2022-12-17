@@ -5,8 +5,24 @@
   &::-webkit-scrollbar {
     overflow: hidden;
   }
+  .friend-connect {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+    }
+    h3 {
+      margin-top: 10px;
+    }
+  }
   .my-message {
     float: right;
+    margin-bottom: 8px;
     .my-text {
       display: flex;
       align-items: flex-end;
@@ -43,10 +59,14 @@
       text-align: end;
       padding: 5px 0px;
       color: yellowgreen;
+      p {
+        font-size: 12px;
+      }
     }
   }
   .fd-message {
     float: left;
+    margin-bottom: 8px;
     .fd-text {
       display: flex;
       align-items: flex-end;
@@ -64,6 +84,12 @@
           overflow: hidden;
           object-fit: cover;
         }
+      }
+    }
+    .time {
+      color: yellowgreen;
+      p {
+        font-size: 12px;
       }
     }
   }

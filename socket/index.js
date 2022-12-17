@@ -18,6 +18,9 @@ const removeUser = (socketId) => {
   const newListUser = users.filter((u) => u.socketId !== socketId);
   users = newListUser;
 };
+const userLogout = (userId) => {
+  users = users.filter((u) => u.userId !== userId);
+};
 const findFriend = (id) => {
   let friend = {};
   users.map((user) => {
@@ -40,9 +43,30 @@ io.on('connection', (socket) => {
     // }
   });
   socket.on('sendMessage', (data) => {
+    console.log(data);
     const user = findFriend(data.receiverId);
     if (user !== undefined) {
       socket.to(user.socketId).emit('getMessage', data);
+    }
+  });
+  socket.on('deliveriedMessage', (data) => {
+    const user = findFriend(data.senderId);
+    if (user !== undefined) {
+      console.log('chay');
+      socket.to(user.socketId).emit('deliveredMessageRes', data);
+    }
+  });
+  socket.on('messageSeen', (data) => {
+    const user = findFriend(data.senderId);
+    if (user !== undefined) {
+      socket.to(user.socketId).emit('messageSeenRes', data);
+    }
+  });
+  socket.on('seen', (data) => {
+    console.log(data);
+    const user = findFriend(data.senderId);
+    if (user !== undefined) {
+      socket.to(user.socketId).emit('seenSuccess', data);
     }
   });
   socket.on('typingMessage', (data) => {
@@ -55,9 +79,12 @@ io.on('connection', (socket) => {
       });
     }
   });
+  socket.on('signout', (userId) => {
+    removeUser(userId);
+  });
   socket.on('disconnect', () => {
     console.log('user disconnect....');
-    removeUser(socket.id);
+    userLogout(socket.id);
     io.emit('getUser', users);
   });
 });

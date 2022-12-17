@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import toast, { Toaster } from 'react-hot-toast';
 import { BsThreeDots } from 'react-icons/bs';
+import { IoEnterOutline } from 'react-icons/io5';
 import { FaEdit } from 'react-icons/fa';
 import SearchIcon from '@mui/icons-material/Search';
 import { Stack, Paper, IconButton, InputBase } from '@mui/material';
@@ -15,6 +16,8 @@ import { io } from 'socket.io-client';
 import { messageActions } from '../features/message/message.slice';
 import useSound from 'use-sound';
 import notificationSound from '../assets/audio/SMSIPhoneRingtone.mp3';
+import avatar from '../assets/images/profile.png';
+import { userActions } from '../features/user/user.slice';
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -30,13 +33,14 @@ const Home = () => {
 
   const message = useSelector((state) => state.message);
   const user = useSelector((state) => state.user);
-  const { friends, messages } = message;
+  const { friends, messages, sendSuccess, getSuccess } = message;
   const [currentFriend, setCurrentFriend] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [listMessage, setListMessage] = useState(messages);
   const [listFriendActive, setListFriendActive] = useState([]);
   const [socketMessage, setSocketMessage] = useState('');
   const [typeingMessage, setTypeingMessage] = useState('');
+  const [hide, setHide] = useState(true);
   const [notificationSPlay] = useSound(notificationSound);
   const inputHandleChange = (e) => {
     setNewMessage(e.target.value);
@@ -85,26 +89,11 @@ const Home = () => {
         .unwrap()
         .then((value) => {
           setNewMessage('');
-          const messageData = {
-            senderId: user.info.id,
-            senderName: user.info.username,
-            receiverId: currentFriend._id,
-            time: new Date(),
-            message: {
-              text: '',
-              image: value.message.message.image,
-            },
-          };
-          socket.current.emit('sendMessage', messageData);
           socket.current.emit('typingMessage', {
             senderId: user.info.id,
             receiverId: currentFriend._id,
             msg: '',
           });
-          return dispatch(messageThunk.getMessageAPI(currentFriend._id)).unwrap();
-        })
-        .then((value) => {
-          setListMessage(value.list);
         });
     }
   };
@@ -119,30 +108,33 @@ const Home = () => {
     };
     dispatch(messageThunk.sendMessageAPI(messageData))
       .unwrap()
-      .then(() => {
-        setNewMessage('');
-        return dispatch(messageThunk.getMessageAPI(currentFriend._id)).unwrap();
-      })
       .then((value) => {
-        const messageData = {
-          senderId: user.info.id,
-          senderName: user.info.username,
-          receiverId: currentFriend._id,
-          time: new Date(),
-          message: {
-            text: newMessage === '' ? '👍' : newMessage,
-            image: '',
-          },
-        };
+        setNewMessage('');
         socket.current.emit('typingMessage', {
           senderId: user.info.id,
           receiverId: currentFriend._id,
           msg: '',
         });
-        console.log(messageData);
-        socket.current.emit('sendMessage', messageData);
-        setListMessage(value.list);
       });
+  };
+  const handleSignOut = () => {
+    dispatch(userActions.signout());
+    socket.current.emit('signout', user.info.id);
+  };
+  const searchHandle = (e) => {
+    console.log(e.target.value);
+    const getFriendClass = document.getElementsByClassName('hover-friend');
+    console.log(getFriendClass);
+    const friendNameClass = document.getElementsByClassName('Fd_name');
+    console.log(friendNameClass);
+    for (let i = 0; i < getFriendClass.length, i < friendNameClass.length; i++) {
+      let text = friendNameClass[i].innerText.toLowerCase();
+      if (text.indexOf(e.target.value.toLowerCase()) !== -1) {
+        getFriendClass[i].style.display = '';
+      } else {
+        getFriendClass[i].style.display = 'none';
+      }
+    }
   };
   useEffect(() => {
     socket.current = io('ws://localhost:8000');
@@ -151,6 +143,16 @@ const Home = () => {
     });
     socket.current.on('getTypingMessage', (data) => {
       setTypeingMessage(data);
+    });
+    socket.current.on('messageSeenRes', (data) => {
+      dispatch(messageActions.seenMessage(data));
+    });
+    socket.current.on('deliveredMessageRes', (data) => {
+      console.log(data);
+      dispatch(messageActions.deliveredMessage(data));
+    });
+    socket.current.on('seenSuccess', (data) => {
+      dispatch(messageActions.seenAllMessage(data));
     });
   }, [socket]);
   useEffect(() => {
@@ -166,40 +168,89 @@ const Home = () => {
       });
     }
   }, [user.info, socket]);
+
   useEffect(() => {
     if (socketMessage && currentFriend) {
       if (socketMessage.senderId === currentFriend._id && socketMessage.receiverId === user.info.id) {
         dispatch(messageActions.socketSendMessage(socketMessage));
-        dispatch(messageThunk.getMessageAPI(currentFriend._id))
-          .unwrap()
-          .then((value) => {
-            setListMessage(value.list);
-          });
+        // update status message
+        dispatch(messageThunk.updateMessageStatusAPI(socketMessage));
+        socket.current.emit('messageSeen', socketMessage);
+        dispatch(
+          messageActions.updateFriendMessage({
+            messageData: socketMessage,
+            status: 'seen',
+          })
+        );
       }
     }
     setSocketMessage('');
-  }, [socketMessage, currentFriend, dispatch, user.info]);
+  }, [socketMessage]);
   useEffect(() => {
     if (socketMessage && socketMessage.senderId !== currentFriend._id && socketMessage.receiverId === user.info.id) {
       notificationSPlay();
       toast.success(`${socketMessage.senderName} đã gửi cho bạn một tin nhắn`);
+      // update message socket
+      socket.current.emit('deliveriedMessage', socketMessage);
+      dispatch(messageThunk.updateMessaageDeliveredAPI(socketMessage))
+        .unwrap()
+        .then(() => {
+          dispatch(
+            messageActions.updateFriendMessage({
+              messageData: socketMessage,
+              status: 'delivered',
+            })
+          );
+        });
     }
   }, [socketMessage]);
 
   useEffect(() => {
-    if (friends && friends.length > 0) {
+    if (sendSuccess) {
+      dispatch(messageThunk.getMessageAPI(currentFriend._id))
+        .unwrap()
+        .then((value) => {
+          socket.current.emit('sendMessage', value.list[value.list.length - 1]);
+          setListMessage(value.list);
+        });
+    }
+  }, [sendSuccess]);
+
+  useEffect(() => {
+    if (friends && friends.length > 0 && !currentFriend) {
       setCurrentFriend(friends[0].friendInfo);
     }
   }, [friends]);
+
   useEffect(() => {
     if (currentFriend) {
       dispatch(messageThunk.getMessageAPI(currentFriend._id))
         .unwrap()
         .then((value) => {
-          setListMessage(value.list);
+          if (value.list[value.list.length - 1].senderId !== user.info.id) {
+            socket.current.emit('seen', {
+              senderId: currentFriend._id,
+              receiverId: user.info.id,
+            });
+            dispatch(messageThunk.updateMessageStatusAPI({ _id: value.list[value.list.length - 1]._id }))
+              .unwrap()
+              .then(() => {
+                dispatch(messageActions.updateFriends(currentFriend._id));
+                return dispatch(messageThunk.getMessageAPI(currentFriend._id)).unwrap();
+              })
+              .then((value) => {
+                setListMessage(value.list);
+              });
+          }
         });
     }
-  }, [dispatch, currentFriend]);
+  }, [currentFriend]);
+  useEffect(() => {
+    if (Object.keys(messages).length !== 0) {
+      setListMessage(messages);
+    }
+  }, [messages]);
+
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [listMessage]);
@@ -237,9 +288,7 @@ const Home = () => {
               <div className="image-name">
                 {user.info ? (
                   <>
-                    <div className="image">
-                      <img src={user.info.image} alt="avatar" />
-                    </div>
+                    <div className="image">{user.info.image ? <img src={user.info.image} alt="avatar" /> : <img src={avatar} alt="avatar" />}</div>
                     <div className="name">
                       <h3>{user.info.username}</h3>
                     </div>
@@ -247,8 +296,8 @@ const Home = () => {
                 ) : null}
               </div>
               <div className="icons">
-                <div className="icon">
-                  <BsThreeDots />
+                <div className="icon" onClick={handleSignOut}>
+                  <IoEnterOutline />
                 </div>
                 <div className="icon">
                   <FaEdit />
@@ -266,7 +315,7 @@ const Home = () => {
                   }}
                   variant="outlined"
                 >
-                  <InputBase sx={{ ml: 1, flex: 1, fontSize: '14px', paddingLeft: '10px' }} placeholder="Tìm kiếm..." />
+                  <InputBase onChange={searchHandle} sx={{ ml: 1, flex: 1, fontSize: '14px', paddingLeft: '10px' }} placeholder="Tìm kiếm..." />
                   <IconButton type="button" sx={{ p: '10px' }}>
                     <SearchIcon />
                   </IconButton>
@@ -274,19 +323,19 @@ const Home = () => {
               </Stack>
             </div>
 
-            <div className="active-friends">
+            {/* <div className="active-friends">
               {listFriendActive && listFriendActive.length > 0
                 ? listFriendActive.map((item, index) => {
                     return <ActiveFriends user={item} key={index} setCurrentFriend={setCurrentFriend} />;
                   })
                 : null}
-            </div>
+            </div> */}
             <div className="friends">
               {friends && friends.length > 0
                 ? friends.map((item, index) => {
                     return (
                       <div className={currentFriend._id === item.friendInfo._id ? 'hover-friend active' : 'hover-friend'} key={index} onClick={() => setCurrentFriend(item.friendInfo)}>
-                        <ListFriend friend={item} myInfo={user.info} />
+                        <ListFriend friend={item} myInfo={user.info} activeFriends={listFriendActive} />
                       </div>
                     );
                   })
